@@ -1,0 +1,14 @@
+{
+  "name": "just-enough-functional-programming",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "code-surfer": "^3.0.0",
+    "gatsby": "^2.19.16",
+    "mdx-deck": "^3.1.0"
+  },
+  "scripts": {
+    "present": "mdx-deck just-enough-functional-programming.mdx"
+  }
+}

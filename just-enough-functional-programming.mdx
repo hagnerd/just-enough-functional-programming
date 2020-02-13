@@ -1,0 +1,393 @@
+import { Notes } from 'mdx-deck'
+
+#### Just Enough Functional Programming
+
+---
+
+### A little about me
+
+<Notes>
+<p>Hi my name is Matt Hagner and I'm in the FED group.</p>
+<p>I really enjoy:</p>
+<ul>
+  <li>Pair programming</li>
+  <li>Test-driven development</li>
+  <li>Functional programming</li>
+</ul>
+<p>When I'm not programming I enjoy:</p>
+  <li>traveling with my fiancé</li>
+  <li>binge watching whatever the new hotness is on Netflix</li>
+  <li>eating at really nice restaurants while being way too underdressed.</li>
+</Notes>
+
+---
+
+### What is this talk about?
+
+<Notes><p>
+Today we are going to be talking about functional programming, but instead of coming at you like a zealot who is espousing some universal truth, I hope to show you the pros and cons of different aspects of functional programming, some useful patterns that you can use in your code today, and at least a hint of some of the powerful things you can do if you choose to dive into the deep-end.
+</p></Notes>
+
+---
+
+### A brief history of functional programming
+
+<Notes>
+<p>First, it might be helpful to understand what functional programming is.</p>
+<p>Functional programming is a programming paradigm, which really just means it's an opinionated way to architect your software. It originates from Lambda Calculus which is a formal system of logic in mathematics for computation using abstract functions, variables (usually called bindings) and substitution. Lambda Calculus was introduced by Alonso Church in the 1930s.</p>
+<p>If your eyes glossed over when I said that, all you need to take away is Lambda Calculus describes a lot of the things that we now do in functional programming, and Lambda Calculus pre-dates computers.</p>
+</Notes>
+
+--- 
+
+### Core tenants
+
+<ul>
+<Appear>
+  <li>Immutability </li>
+  <li>Pure Functions</li>
+  <li>Composition/Decomposition</li>
+  <li>Managed Complexity</li>
+</Appear>
+</ul>
+
+<Notes>
+<p>We now know a little bit about the history of functional programming, and that it is a programming paradigm, but what makes it different? What are its core tenants?</p>
+<p>ACTION: REVEAL ITEMS</p>
+<p>We'll go through what each of these are in greater detail, but the first two are the 20% of functional programming that will yield the greatest impact, maybe not 80%, but certainly a bulk of the impact from taking on functional programming. The latter two take time to understand and master, but hopefully with a gentle enough introduction will pique your interest and show you why people choose to pursue functional programming.</p>
+</Notes>
+
+---
+
+## Immutability
+
+<Notes>
+<p>Let's pretend like we don't know what immutability is for a moment, because when you first learn it, it's kind of weird, and there is some misconceptions about what it really is.</p>
+<p>Immutability means that once a value is bound to a variable, you cannot change the _value_ through mutation.</p>
+<p>There is a misconception that functional programming prevents you from re-assigning the variable, and that isn't quite true. Many functional programming languages allow shadowing, which is essentially declaring a new variable with the same name. The _data_ or the value that the variable points to in memory is the thing that is immutable.</p>
+<p>Let's look at an example.</p>
+</Notes>
+
+---
+
+## Immutability example
+
+
+<Notes>
+  <p>
+Here we are looking at a simplified shopping cart. It stores the total dollar amount of the products in the cart, the number of products in the cart, and an array of the products with some meta-data like the title, the price, the id, and the quantity of that particular product that is in the cart.
+  </p>
+  <p>
+When a user visits our store they are greeted with an empty cart. Let's pretend they found something they liked, like some cool Pizza Socks. They add it to their cart, and now we need to update the cart. How do we do that in an immutable world?
+  </p>
+  <p>
+Here I am going to show off what updating it with static values would look like, in reality this update would happen in a function, and then our cart would be re-rendered to display the new values. 
+  </p>
+</Notes>
+
+---
+
+## Pros and cons of immutability
+
+---
+
+<p>Pros</p>
+<ul>
+<Appear>
+<li>Eliminates an entire class of bugs</li>
+<li>Can help make debugging easier</li>
+<li>Can simplify change detection</li>
+</Appear>
+</ul>
+
+<Notes>
+  <li>The biggest pro is that it eliminates an entire class of bugs: race conditions. If nothing can mutate the value, there can be no race conditions.
+</li>
+  <li>
+It can help make debugging easier. (The only way to change a value is to assign it to a new variable with the changes you want to make, therefore, a value can never change out from under you). 
+  </li>
+  <li>
+    It can simplify change detection. There is no need to check deep equality, if the reference to the object (or array) has changed, then the value has changed.
+  </li>
+</Notes>
+
+---
+
+<p>Cons</p>
+
+<ul>
+<Appear>
+<li>Nested updates can get ugly</li>
+<li>It can be less memory efficient</li>
+</Appear>
+</ul>
+
+<Notes>
+<p>It can get really ugly when you need to update nested values</p>
+<p>It is less memory efficient (although the memory implications are significantly overplayed most of the time)</p>
+</Notes>
+
+---
+
+## Pure functions
+
+<Appear>
+  <p>Given the same input, it will return the same output</p>
+  <p>Performs no side-effects</p>
+</Appear>
+
+<Notes>
+  <p>Again, we probably have some knowledge of what a pure function is, but let's just pretend for a moment that we don't.</p>
+  <p>A pure function is a function that given the same input, will return the same output. Pure functions also perform no side-effects. There are two classes of side-effects. Ones we'll call sanctioned, and ones we'll call forbidden. </p>
+</Notes>
+
+---
+
+## Side Effects
+
+<Notes>
+<p>The sanctioned side effects are necessary for useful software and include reading from and writing to external data sources (think the file system, a server, localStorage), generating random numbers, getting the current date or time, rendering things to the DOM, or outputting values in the console or terminal. We call these sanctioned not because you can do them inside of pure functions, but instead because without them, our software would be pretty boring. We'll talk about these in the managed complexity portion of the talk, but our goal is to make a majority of our software just pure functions, and push these side effects to the edges of our application.</p>
+<p>Forbidden side-effects include mutating state and using global state. These are forbidden because they break our rules of immutability, and would make our pure functions no-longer pure (as in passing the same value could NOT result in the same return value).</p>
+
+</Notes>
+
+--- 
+
+## Pure functions examples
+
+<Notes>
+  <p>We are going to continue with our shopping cart example, but now we are going to view the implementation of the addItemToCart function to show how we can update the cart using pure functions. The point here isn't to go over every aspect, because there are actually a surprising number of moving parts even in a simple example like this, but instead to understand that this function is pure and deterministic. It's still a little nasty, but we'll continue to refine this functionality in the next section.</p>
+</Notes>
+
+---
+
+## Pros and Cons of Pure Functions
+
+---
+
+<p>Pros</p>
+<ul>
+  <Appear>
+    <li>They are highly testable</li>
+    <li>They are replaceable</li>
+  </Appear>
+</ul>
+
+<Notes>
+  <p>They are the extremely easy to test because they are deterministic. Given the same input, they will give you the same output</p>
+  <p>If there are a realistically finite amount of outputs, you could optimize by replacing it with a record/map/dictionary. (Remember multiplication tables? Think that but for functions). </p>
+</Notes>
+
+---
+
+<p>Cons</p>
+<ul>
+  <Appear>
+    <li>It can be harder to write pure over impure</li>
+    <li>You can end up with many small functions</li>
+    <li>You can end up with a few huge functions</li>
+  </Appear>
+</ul>
+
+<Notes>
+  <p>Sometimes it can take a lot of mental effort to write pure functions when compared to impure functions</p>
+  <p>You can end up with a ton of small functions necessary for a complex pipeline of data transformations</p>
+  <p>You can end up with large pure functions if you don't employ composition/decomposition properly</p>
+</Notes>
+
+---
+
+## Composition/Decomposition
+
+<Notes>
+  <p>If you've noticed a pattern so far, each tenant of functional programming kind of builds on the previous. Data is immutable, so we need pure functions to perform updates. Pure functions have some strict rules like having to be deterministic, so we end up with either a ton of really small pure functions, or a few very large pure functions. Composition and decomposition help solve this problem.</p>
+</Notes>
+
+
+
+---
+
+## Decomposition
+
+<Notes>
+  <p>First let's start with decomposition. The point of decomposing is to pull portions of a computation out of another pure function so that we can simplify the amount of work that needs to be done. I like to think about it as reducing the amount of programming context I need to keep in my brain while looking at a function. This can make the code easier to read, and make it more declarative.</p>
+</Notes>
+
+---
+
+## Composition
+
+<Notes>
+  <p>Composition is the act of taking multiple pure functions, and using them to build up a pipeline that is _hopefully_ easier to follow. Employing these two strategies together allows us to break up logic into small focused functions, and then compose each of those functions back together so the original intent is maintained.</p>
+</Notes>
+
+---
+
+## Composition/Decomposition Example
+
+<Notes>
+  <p>
+At this point, you are probably sick of this shopping cart example but we are going to continue with it. Once again, we aren't focusing on the specifics but instead noting that we have split adding an item into the cart into three pipelines. Pipelines are just sequences of functions that take the return value of the previous function. These are then collected into a new instance of the shopping cart object.
+  </p>
+
+  <p>This lets us split up the complexity into smaller and smaller chunks until we are left with a handful of small, focused functions. And actually, we can re-use a lot of this logic for removing an item from the cart if we adapt it ever so slightly.</p>
+</Notes>
+
+---
+
+## Pros and Cons of composition/decomposition
+
+---
+
+<p>Pros</p>
+<ul>
+  <Appear>
+    <li>We can break up complex functions into a series of small focused functions</li>
+    <li>We can combine these focused functions in pipelines</li>
+    <li>We can make our code more declarative</li>
+  </Appear>
+</ul>
+
+---
+
+<p>Cons</p>
+<ul>
+  <Appear>
+    <li>Is a skill that needs to be built up</li>
+    <li>You can over-utilize this pattern</li>
+  </Appear>
+</ul>
+
+<Notes>
+  <p>This is one of the harder parts of functional programming. Knowing when to decompose and compose is largely based on intuition that you will only build up over time as you are exposed to more and more functional patterns</p>
+  <p>You can decompose and compose things so much that it's hard to follow</p>
+  <p>
+  Bonus: A great example of composition and decomposition is the Phoenix framework in Elixir. From the time a request comes in, until the response is sent, it is just a singular pipeline of functions composed together. 
+  </p>
+</Notes>
+
+---
+
+## Managed Complexity
+
+<Notes>
+  <p>So composition and decomposition is one way we can temper complexity in a functional application, but there is another pattern, for now we'll just call it "Managed Complexity". Essentially it just comes down to well defined interfaces for complex things in our applications. This could be possibly null values, the result of a server request, performing asynchronous work, or even interfacing with List-like things like Arrays. These things are so common that the functional community has come up with a blueprint for dealing with these and many of the functions carry over between them.</p>
+  <p>The best way to learn the pattern is just to see it in action.</p>
+</Notes>
+
+---
+
+## Managed Complexity Example
+
+<Notes>
+  <p>Here is our shopping cart again, and this time our boss has asked us to implement a way to store the cart in localStorage so that if a user navigates away, their cart can be hydrated with the previous state.</p>
+  <p>There are a few moving parts that we have to think about.</p>
+  <ol>
+    <li>When the cart gets updated, we need to store that data in localStorage</li>
+    <li>When the page loads we need to check if there is cart data in localStorage before initializing an empty cart</li>
+    <li>When the user purchases the contents of their shopping cart, we should empty out localStorage so they don't get stale data in the future.</li>
+  </ol>
+  <p>We are going to utilize three patterns here Effect to help us manage the interactions with localStorage, Maybe to help us manage our possibly null localStorage, and Result to help us with acting on the server response.</p>
+</Notes>
+
+---
+
+## Pros and Cons of Managed Complexity
+
+<Notes>
+ <p>I have to confess, I just tricked you. The thing I just showed you isn't called managed complexity, those were actually Functors and Monads...</p> 
+</Notes>
+
+---
+
+## Pros and Cons of Functors and Monads
+
+---
+
+<p>Pros</p>
+<ul>
+  <Appear>
+    <li>Very powerful patterns</li>
+    <li>Offer a lot of flexibility</li>
+  </Appear>
+</ul>
+
+<Notes>
+  <p>Understanding Functors and Monads is a bit like having super powers.</p>
+  <p>They allow really powerful and flexible patterns</p>
+</Notes>
+
+---
+
+<p>Cons</p>
+<ul>
+  <Appear>
+    <li>Steep learning curve because of the academic nature</li>
+    <li>Everyone talks about burritos and uses other non-obvious terms (like monoids, endofunctors, etc) to explain these non-obvious topics.</li>
+  </Appear>
+</ul>
+
+<Notes>
+  <p>Super steep academic learning curve</p>
+  <p>Most non-academic resources are equally as steeped in academic terms or
+  weird analogies that don't quite communicate what is happening</p>
+</Notes>
+
+---
+
+## Closing thoughts
+
+<ul>
+  <Appear>
+    <li>Be patient</li>
+    <li>Focus on small wins</li>
+    <li>Ask a shit ton of questions</li>
+  </Appear>
+</ul>
+
+<Notes>
+<p>Functional programming is a drastically different paradigm, and can take a long time to understand and master some of the concepts. It can be painful in the beginning, or even confusing, but there are some great patterns just below the surface if you make it to the deep end.</p>
+
+<p>I tried to pack a lot of information into a presentation that was under 15 minutes, and there is a good chance I missed things, or explained things in a way that didn't fully click for you. The good news is you can reach me on slack, ask me questions, ask for resources, ask for me to try and explain something again. I am more than happy to do so.</p>
+
+<p>If you're interested in functional programming there are some great resources out there, as well as a lot of choices for languages.</p>
+</Notes>
+
+---
+
+## Recommended reading
+
+<ul>
+  <Appear>
+    <li>Professor Frisby's Mostly Adequate Guide to Functional Programming</li>
+    <li>Functional Light JavaScript by Kyle Simpson</li>
+    <li>jrsinclair.com (it's a blog)</li>
+  </Appear>
+</ul>
+
+---
+
+## Languages of interest
+
+<ul>
+  <Appear>
+    <li>Elixir</li>
+    <li>Clojure</li>
+    <li>OCaml/ReasonML</li>
+    <li>Elm or PureScript</li>
+    <li>Haskell</li>
+  </Appear>
+</ul>
+
+<Notes>
+  <p>Elixir and Clojure are great if you want to avoid some of the academics</p>
+  <p>ReasonML looks a lot like JavaScript and uses OCaml under the hood, both of
+  which are great functional languages</p>
+  <p>Elm and PureScript are good options for front end applications</p>
+  <p>And finally Haskell is the holy grail of functional languages</p>
+</Notes>
+
+---
+
+## Questions
+
