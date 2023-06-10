@@ -5,7 +5,7 @@
   "license": "MIT",
   "dependencies": {
     "code-surfer": "^3.0.0",
-    "gatsby": "^2.19.16",
+    "gatsby": "^4.25.7",
     "mdx-deck": "^3.1.0"
   },
   "scripts": {
